@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/menu_camera"
+        android:title="@string/menu_camera"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/menu_gallery"
+        android:title="@string/menu_gallery"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/menu_about"
+        android:title="@string/menu_about"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:showAsAction="ifRoom"
+        />
+</menu>
