@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Calendar;
+import java.util.HashMap;
+
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -60,11 +64,13 @@ public class MainActivity extends Activity implements SensorEventListener {
     private SharedPreferences   mPrefs;
     private ElementsManager     mManager;
     private GLSurfaceView       mGLView;
+    private MyRenderer          mRenderer;
     private TextView            mCountTextView;
     private ImageButton         mBombButton;
     private TextView            mBombTextView;
     private ImageView           mSoundIconView;
-    private MyRenderer          mRenderer;
+    private AdView              mAdView;
+    private TextView            mAdTextView;
     private SensorManager       mSensorMan;
     private Sensor              mSensor;
     private SoundPool           mSoundPool;
@@ -98,9 +104,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         cal.set(Calendar.SECOND, 0);
         long lastLaunch = mPrefs.getLong(PREF_KEY_LAST, 0);
         if (lastLaunch > 0 && lastLaunch < cal.getTimeInMillis()) {
-            mBomb += 10;
-            Toast.makeText(this, String.format(getString(R.string.msg_obtain_bomb), 10),
-                    Toast.LENGTH_LONG).show();
+            obtainBombs(5);
         }
 
         mManager = new ElementsManager();
@@ -134,11 +138,13 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         });
         mCountTextView = (TextView) findViewById(R.id.text_count);
-        updateCount();
         mBombButton = (ImageButton) findViewById(R.id.btn_bomb);
         mBombTextView = (TextView) findViewById(R.id.text_bomb);
-        updateBomb();
         mSoundIconView = (ImageView) findViewById(R.id.img_sound);
+        mAdView = (AdView) findViewById(R.id.ad);
+        mAdTextView = (TextView) findViewById(R.id.text_ad);
+        updateCount();
+        updateBomb();
         updateSoundIcon();
 
         mSensorMan = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -194,6 +200,25 @@ public class MainActivity extends Activity implements SensorEventListener {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        if (intent != null) {
+            Bundle bundle = intent.getBundleExtra("com.google.ads.AdOpener");
+            if (bundle != null) {
+                HashMap<String, String> map = (HashMap<String, String>) bundle.get("params");
+                if (map != null) {
+                    String u = map.get("u");
+                    if (u != null && u.length() > 200) {
+                        obtainBombs((int) (Math.sqrt(Math.random() * 120.0) + 10.0));
+                        updateBomb();
+                        mAdView.loadAd(new AdRequest());
+                    }
+                }
+            }
+        }
+        super.startActivityForResult(intent, requestCode);
     }
 
     @Override
@@ -254,11 +279,18 @@ public class MainActivity extends Activity implements SensorEventListener {
     private void updateBomb() {
         mBombTextView.setText(String.valueOf(mBomb));
         mBombButton.setEnabled((mBomb > 0));
+        mAdTextView.setVisibility((mBomb == 0) ? View.VISIBLE : View.GONE);
     }
 
     private void updateSoundIcon() {
         mSoundIconView.setImageResource(mSound ? android.R.drawable.ic_lock_silent_mode_off :
             android.R.drawable.ic_lock_silent_mode);
+    }
+
+    private void obtainBombs(int num) {
+        mBomb += num;
+        Toast.makeText(this, String.format(getString(R.string.msg_obtain_bomb), num),
+                Toast.LENGTH_LONG).show();
     }
 
     private void showVersion() {
