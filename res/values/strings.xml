@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_code">OBN-A16</string>
-    <string name="app_name">爆ラッシュ</string>
-    <string name="menu_camera">カメラ</string>
-    <string name="menu_gallery">ギャラリー</string>
-    <string name="menu_about">バージョン情報</string>
-    <string name="msg_click_ad">↓広告サイトに飛んで爆弾をゲット↓</string>
-    <string name="msg_obtain_bomb">爆弾%d個ゲット!!</string>
-    <string name="msg_cap_btn">画像取り込み</string>
-    <string name="msg_focus">フォーカス中</string>
-    <string name="msg_capture">取り込み中</string>
+    <string name="app_code" translatable="false">OBN-A16</string>
+    <string name="app_name">Baku-rush</string>
+    <string name="menu_camera">Camera</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_about">Version info</string>
+    <string name="msg_click_ad">&#8595;Go to ad-site to obtain bombs.&#8595;</string>
+    <string name="msg_obtain_bomb">%d bombs were obtained!!</string>
+    <string name="msg_cap_btn">Capture image</string>
+    <string name="msg_focus">Focusing&#8230;</string>
+    <string name="msg_capture">Capturing&#8230;</string>
 </resources>
