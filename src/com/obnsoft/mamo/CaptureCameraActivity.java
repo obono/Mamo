@@ -25,6 +25,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.view.Surface;
@@ -38,6 +39,7 @@ public class CaptureCameraActivity extends CaptureActivity
 
     private Camera      mCamera;
     private Camera.Size mCameraSize;
+    private int         mCameraId;
     private SurfaceView mCamView;
 
     private boolean mFocusing;
@@ -102,31 +104,46 @@ public class CaptureCameraActivity extends CaptureActivity
     public void surfaceCreated(SurfaceHolder holder) {
         try {
             int size = getFrameSize();
-            mCamera = Camera.open();
-            if (mCamera == null) {
-                mCamera = Camera.open(0);
+            CameraInfo info = new CameraInfo();
+            mCameraId = 0;
+            for (int i = 0, c = Camera.getNumberOfCameras(); i < c; i++) {
+                Camera.getCameraInfo(i, info);
+                if (info.facing == CameraInfo.CAMERA_FACING_BACK) {
+                    mCameraId = i;
+                    break;
+                }
             }
+            mCamera = Camera.open(mCameraId);
             mCamera.setPreviewDisplay(holder);
             Camera.Parameters cp = mCamera.getParameters();
             List<Camera.Size> sizeList = cp.getSupportedPreviewSizes();
-            mCameraSize = sizeList.get(0);
+            mCameraSize = null;
             for (Camera.Size s : sizeList) {
-                if (s.width >= size && s.height >= size &&
-                        s.width * s.height < mCameraSize.width * mCameraSize.height) {
+                if (s.width >= size && s.height >= size && (mCameraSize == null ||
+                        s.width * s.height < mCameraSize.width * mCameraSize.height)) {
                     mCameraSize = s;
                 }
             }
+            if (mCameraSize == null) {
+                mCameraSize = sizeList.get(0);
+            }
             cp.setPreviewSize(mCameraSize.width, mCameraSize.height);
-            cp.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
             mCamera.setParameters(cp);
+            try {
+                cp.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+                mCamera.setParameters(cp);
+            } catch (RuntimeException e2) {
+                e2.printStackTrace();
+            }
         } catch(IOException e) {
             e.printStackTrace();
         }
+        setCameraOrientation();
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        setCameraOrientation();
+        //setCameraOrientation();
     }
 
     @Override
@@ -164,31 +181,39 @@ public class CaptureCameraActivity extends CaptureActivity
 
     private void setCameraOrientation() {
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 90;
+        int dispDeg = 0;
         switch (rotation) {
-            case Surface.ROTATION_0:   degrees = 90;  break;
-            case Surface.ROTATION_90:  degrees = 0;   break;
-            case Surface.ROTATION_180: degrees = 270; break;
-            case Surface.ROTATION_270: degrees = 180; break;
+            case Surface.ROTATION_0:   dispDeg = 0;   break;
+            case Surface.ROTATION_90:  dispDeg = 90;  break;
+            case Surface.ROTATION_180: dispDeg = 180; break;
+            case Surface.ROTATION_270: dispDeg = 270; break;
         }
+        int camDeg;
+        CameraInfo info = new CameraInfo();
+        Camera.getCameraInfo(mCameraId, info);
+        if (info.facing == CameraInfo.CAMERA_FACING_BACK) {
+            camDeg = (360 + info.orientation - dispDeg) % 360;
+        } else {
+            camDeg = (720 - info.orientation - dispDeg) % 360;
+        }
+
         int w, h;
-        if (degrees % 180 == 90) {
+        if (camDeg % 180 == 90) {
             w = mCameraSize.height;
             h = mCameraSize.width;
         } else {
             w = mCameraSize.width;
             h = mCameraSize.height;
         }
+        mCamera.stopPreview();
         if (w != mCamView.getWidth() || h != mCamView.getHeight()) {
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(w, h);
             lp.addRule(RelativeLayout.CENTER_IN_PARENT);
             mCamView.setLayoutParams(lp);
-        } else {
-            mCamera.stopPreview();
-            mCamera.setDisplayOrientation(degrees);
-            mCamera.setPreviewCallbackWithBuffer(this);
-            mCamera.startPreview();
         }
+        mCamera.setDisplayOrientation(camDeg);
+        mCamera.setPreviewCallbackWithBuffer(this);
+        mCamera.startPreview();
     }
 
 }

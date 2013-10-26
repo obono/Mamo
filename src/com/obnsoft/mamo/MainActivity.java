@@ -94,7 +94,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mCount = mPrefs.getInt(PREF_KEY_COUNT, 0);
-        mBomb = mPrefs.getInt(PREF_KEY_BOMB, 30);
+        mBomb = mPrefs.getInt(PREF_KEY_BOMB, 10);
         mSound = mPrefs.getBoolean(PREF_KEY_SOUND, false);
 
         Calendar cal = Calendar.getInstance();
@@ -104,10 +104,13 @@ public class MainActivity extends Activity implements SensorEventListener {
         cal.set(Calendar.SECOND, 0);
         long lastLaunch = mPrefs.getLong(PREF_KEY_LAST, 0);
         if (lastLaunch > 0 && lastLaunch < cal.getTimeInMillis()) {
-            obtainBombs(5);
+            obtainBombs(3);
         }
 
         mManager = new ElementsManager();
+        int day = cal.get(Calendar.DAY_OF_YEAR);
+        mManager.setInterval((day == 16) ? 8 : Math.abs(day % 21 - 10) + 50);
+        mManager.setTricks((day % 67 == 33), (day % 31 == 11), (day % 37 == 22));
         mGLView = (GLSurfaceView) findViewById(R.id.glview);
         mRenderer = new MyRenderer(this, mManager);
         mGLView.setRenderer(mRenderer);
@@ -211,7 +214,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 if (map != null) {
                     String u = map.get("u");
                     if (u != null && u.length() > 200) {
-                        obtainBombs((int) (Math.sqrt(Math.random() * 120.0) + 10.0));
+                        obtainBombs((int) (Math.sqrt(Math.random()) * 11.0) + 5);
                         updateBomb();
                         mAdView.loadAd(new AdRequest());
                     }

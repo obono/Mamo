@@ -28,6 +28,10 @@ public class ElementsManager {
     private float   mRangeX = 0.5f;
     private float   mRangeY = 0.5f;
     private float   mFlashLevel = 0f;
+    private int     mInterval = 60;
+    private boolean mSpeedTrick = false;
+    private boolean mRotationTrick = false;
+    private boolean mAngleTrick = false;
 
     /*-----------------------------------------------------------------------*/
 
@@ -39,6 +43,16 @@ public class ElementsManager {
         }
     }
 
+    public void setInterval(int interval) {
+        mInterval = interval;
+    }
+
+    public void setTricks(boolean speed, boolean rotation, boolean angle) {
+        mSpeedTrick = speed;
+        mRotationTrick = rotation;
+        mAngleTrick = angle;
+    }
+
     public void setFieldRange(float rangeX, float rangeY) {
         mRangeX = rangeX;
         mRangeY = rangeY;
@@ -46,7 +60,7 @@ public class ElementsManager {
 
     public void forwardElements() {
         synchronized (mElementArray) {
-            if (++mFrames % 60 == 0) {
+            if (++mFrames % mInterval == 0) {
                 newTarget();
             }
             for (Element e : mElementArray) {
@@ -87,6 +101,22 @@ public class ElementsManager {
             e.y = (float) ((Math.random() - 0.5) * mRangeY * 2.0);;
             e.r = (float) (Math.random() * 90.0);
             e.type = 0;
+            if (mSpeedTrick) {
+                double deg = Math.random() * Math.PI * 2.0;
+                e.vx = (float) (Math.cos(deg) / 16.0);
+                e.vy = (float) (Math.sin(deg) / 16.0);
+            }
+            if (mRotationTrick) {
+                e.vr = (e.vx < 0) ? -10 : 10;
+            }
+            if (mAngleTrick) {
+                if (Math.random() < 0.5) {
+                    e.vx = 0f;
+                } else {
+                    e.vy = 0f;
+                }
+                e.vr = 0f;
+            }
             mElementArray.add(e);
         }
     }
