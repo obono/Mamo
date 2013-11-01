@@ -10,4 +10,5 @@
     <string name="msg_cap_btn">Capture image</string>
     <string name="msg_focus">Focusing&#8230;</string>
     <string name="msg_capture">Capturing&#8230;</string>
+    <string name="msg_pinch">Adjust by pinching and swiping.</string>
 </resources>

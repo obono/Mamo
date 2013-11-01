@@ -148,14 +148,18 @@ public class MyRenderer implements Renderer {
         vertexBuf.position(0);
         vertexBuf.put(VERTICES);
         vertexBuf.put(TEXCOORDS);
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 4; x++) {
-                for (int i = 0; i < 2; i++) {
-                    for (int j = 0; j < 2; j++) {
-                        vertexBuf.put((x + j) / 4f);
-                        vertexBuf.put((y + i) / 4f);
-                    }
-                }
+        for (int y1 = 0; y1 < 4; y1++) {
+            int y2 = y1 + 1;
+            for (int x1 = 0; x1 < 4; x1++) {
+                int x2 = x1 + 1;
+                vertexBuf.put(x1 / 4f);
+                vertexBuf.put(y1 / 4f);
+                vertexBuf.put(x2 / 4f);
+                vertexBuf.put(y1 / 4f);
+                vertexBuf.put(x2 / 4f);
+                vertexBuf.put(y2 / 4f);
+                vertexBuf.put(x1 / 4f);
+                vertexBuf.put(y2 / 4f);
             }
         }
 

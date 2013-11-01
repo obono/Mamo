@@ -49,6 +49,7 @@ public class CaptureGalleryActivity extends CaptureActivity {
         setContentView(R.layout.gallery);
         super.onCreate(savedInstanceState);
 
+        setMessage(R.string.msg_pinch);
         mImgView = (MagnifyView) findViewById(R.id.view_capimage);
     }
 

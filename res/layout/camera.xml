@@ -12,10 +12,11 @@
         />
     <View
         android:id="@+id/view_capframe"
-        android:layout_width="256px"
-        android:layout_height="256px"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
+        android:background="@drawable/shp_view_capframe"
         />
     <ImageButton
         android:id="@+id/btn_capture"

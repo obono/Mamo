@@ -9,4 +9,5 @@
     <string name="msg_cap_btn">画像取り込み</string>
     <string name="msg_focus">フォーカス中</string>
     <string name="msg_capture">取り込み中</string>
+    <string name="msg_pinch">ピンチ操作とスワイプで位置を調整</string>
 </resources>
