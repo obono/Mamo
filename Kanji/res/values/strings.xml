@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_code">OBN-A10</string>
-    <string name="app_name">うにこで</string>
-    <string name="enter">文字を入力</string>
-    <string name="unicode">(Unicode)</string>
-    <string name="license">Copyright (C) 2013 OBN-soft\nLicensed under the Apache License, Version 2.0</string>
-</resources>
