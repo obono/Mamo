@@ -11,4 +11,5 @@
     <string name="msg_focus">Focusing&#8230;</string>
     <string name="msg_capture">Capturing&#8230;</string>
     <string name="msg_pinch">Adjust by pinching and swiping.</string>
+    <string name="msg_notsupported">Sorry, this function isn\'t supported.</string>
 </resources>

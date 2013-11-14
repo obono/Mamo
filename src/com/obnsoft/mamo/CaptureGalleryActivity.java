@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -31,6 +32,7 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 public class CaptureGalleryActivity extends CaptureActivity {
 
@@ -60,7 +62,13 @@ public class CaptureGalleryActivity extends CaptureActivity {
         } else {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
-            startActivityForResult(intent, REQUEST_ID_CHOOSE_FILE);
+            try {
+                startActivityForResult(intent, REQUEST_ID_CHOOSE_FILE);
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(this, R.string.msg_notsupported, Toast.LENGTH_LONG).show();
+                setCanceledResult();
+                e.printStackTrace();
+            }
         }
         super.onResume();
     }

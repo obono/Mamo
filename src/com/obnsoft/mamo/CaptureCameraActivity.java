@@ -33,6 +33,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 public class CaptureCameraActivity extends CaptureActivity
         implements SurfaceHolder.Callback, PreviewCallback {
@@ -114,6 +115,11 @@ public class CaptureCameraActivity extends CaptureActivity
                 }
             }
             mCamera = Camera.open(mCameraId);
+            if (mCamera == null) {
+                Toast.makeText(this, R.string.msg_notsupported, Toast.LENGTH_LONG).show();
+                setCanceledResult();
+                return;
+            }
             mCamera.setPreviewDisplay(holder);
             Camera.Parameters cp = mCamera.getParameters();
             List<Camera.Size> sizeList = cp.getSupportedPreviewSizes();
@@ -148,9 +154,11 @@ public class CaptureCameraActivity extends CaptureActivity
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        mCamera.stopPreview();
-        mCamera.release();
-        mCamera = null;
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+        }
     }
 
     @Override
@@ -213,7 +221,13 @@ public class CaptureCameraActivity extends CaptureActivity
         }
         mCamera.setDisplayOrientation(camDeg);
         mCamera.setPreviewCallbackWithBuffer(this);
-        mCamera.startPreview();
+        try {
+            mCamera.startPreview();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Toast.makeText(this, R.string.msg_notsupported, Toast.LENGTH_LONG).show();
+            setCanceledResult();
+        }
     }
 
 }
