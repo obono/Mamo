@@ -12,6 +12,24 @@
         android:showAsAction="ifRoom"
         />
     <item
+        android:id="@+id/menu_history"
+        android:title="@string/menu_history"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/menu_simple_mode"
+        android:title="@string/menu_simple_mode"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:showAsAction="never"
+        />
+    <item
+        android:id="@+id/menu_normal_mode"
+        android:title="@string/menu_normal_mode"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:showAsAction="never"
+        />
+    <item
         android:id="@+id/menu_about"
         android:title="@string/menu_about"
         android:icon="@android:drawable/ic_menu_info_details"

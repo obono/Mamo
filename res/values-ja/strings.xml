@@ -3,6 +3,9 @@
     <string name="app_name">爆ラッシュ</string>
     <string name="menu_camera">カメラ</string>
     <string name="menu_gallery">ギャラリー</string>
+    <string name="menu_history">履歴</string>
+    <string name="menu_simple_mode">シンプルモード</string>
+    <string name="menu_normal_mode">通常モード</string>
     <string name="menu_about">バージョン情報</string>
     <string name="msg_click_ad">&#8595;広告サイトに飛んで爆弾をゲット&#8595;</string>
     <string name="msg_obtain_bomb">爆弾%d個ゲット!!</string>

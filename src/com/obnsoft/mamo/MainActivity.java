@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 OBN-soft
+ * Copyright (C) 2013, 2014 OBN-soft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Calendar;
-import java.util.HashMap;
 
-import com.google.ads.AdRequest;
-import com.google.ads.AdView;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -50,6 +50,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,6 +65,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private SharedPreferences   mPrefs;
     private ElementsManager     mManager;
     private GLSurfaceView       mGLView;
+    private RelativeLayout      mGroupUI;
     private MyRenderer          mRenderer;
     private TextView            mCountTextView;
     private ImageButton         mBombButton;
@@ -112,6 +114,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         mManager.setInterval((day == 16) ? 8 : Math.abs(day % 21 - 10) + 50);
         mManager.setTricks((day % 67 == 33), (day % 31 == 11), (day % 37 == 22));
         mGLView = (GLSurfaceView) findViewById(R.id.glview);
+        mGroupUI = (RelativeLayout) findViewById(R.id.group_ui);
         mRenderer = new MyRenderer(this, mManager);
         mGLView.setRenderer(mRenderer);
         mGLView.setOnTouchListener(new OnTouchListener() {
@@ -136,6 +139,9 @@ public class MainActivity extends Activity implements SensorEventListener {
                         }
                     }
                     break;
+                case MotionEvent.ACTION_UP:
+                    view.performClick();
+                    break;
                 }
                 return true;
             }
@@ -145,11 +151,20 @@ public class MainActivity extends Activity implements SensorEventListener {
         mBombTextView = (TextView) findViewById(R.id.text_bomb);
         mSoundIconView = (ImageView) findViewById(R.id.img_sound);
         mAdView = (AdView) findViewById(R.id.ad);
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+                obtainBombs((int) (Math.sqrt(Math.random()) * 11.0) + 5);
+                updateBomb();
+                updateAdRequest();
+            }
+        });
         mAdTextView = (TextView) findViewById(R.id.text_ad);
         updateCount();
         updateBomb();
         updateSoundIcon();
-
+        updateAdRequest();
         mSensorMan = (SensorManager) getSystemService(SENSOR_SERVICE);
         if ((mSensorMan.getSensors() & SensorManager.SENSOR_ACCELEROMETER) != 0) {
             mSensor = mSensorMan.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -198,30 +213,19 @@ public class MainActivity extends Activity implements SensorEventListener {
         case R.id.menu_gallery:
             startActivityForResult(new Intent(this, CaptureGalleryActivity.class), REQUEST_CAPTURE);
             return true;
+        case R.id.menu_history:
+            return true;
+        case R.id.menu_simple_mode:
+            mGroupUI.setVisibility(View.INVISIBLE);
+            return true;
+        case R.id.menu_normal_mode:
+            mGroupUI.setVisibility(View.VISIBLE);
+            return true;
         case R.id.menu_about:
             showVersion();
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void startActivityForResult(Intent intent, int requestCode) {
-        if (intent != null) {
-            Bundle bundle = intent.getBundleExtra("com.google.ads.AdOpener");
-            if (bundle != null) {
-                HashMap<String, String> map = (HashMap<String, String>) bundle.get("params");
-                if (map != null) {
-                    String u = map.get("u");
-                    if (u != null && u.length() > 200) {
-                        obtainBombs((int) (Math.sqrt(Math.random()) * 11.0) + 5);
-                        updateBomb();
-                        mAdView.loadAd(new AdRequest());
-                    }
-                }
-            }
-        }
-        super.startActivityForResult(intent, requestCode);
     }
 
     @Override
@@ -288,6 +292,14 @@ public class MainActivity extends Activity implements SensorEventListener {
     private void updateSoundIcon() {
         mSoundIconView.setImageResource(mSound ? android.R.drawable.ic_lock_silent_mode_off :
             android.R.drawable.ic_lock_silent_mode);
+    }
+
+    private void updateAdRequest() {
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                //.addTestDevice("INSERT_YOUR_HASHED_DEVICE_ID_HERE")
+                .build();
+        mAdView.loadAd(adRequest);
     }
 
     private void obtainBombs(int num) {

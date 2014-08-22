@@ -4,6 +4,9 @@
     <string name="app_name">Baku-rush</string>
     <string name="menu_camera">Camera</string>
     <string name="menu_gallery">Gallery</string>
+    <string name="menu_history">History</string>
+    <string name="menu_simple_mode">Simple mode</string>
+    <string name="menu_normal_mode">Normal mode</string>
     <string name="menu_about">Version info</string>
     <string name="msg_click_ad">&#8595;Go to ad-site to obtain bombs.&#8595;</string>
     <string name="msg_obtain_bomb">%d bombs were obtained!!</string>

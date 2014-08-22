@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 OBN-soft
+ * Copyright (C) 2013, 2014 OBN-soft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class ElementsManager {
             e.vr = (float) ((Math.random() - 0.5) * 4.0);
             e.x = (float) ((Math.random() - 0.5) * mRangeX * 2.0);
             e.y = (float) ((Math.random() - 0.5) * mRangeY * 2.0);;
-            e.r = (float) (Math.random() * 90.0);
+            e.r = (float) (Math.random() * 360.0);
             e.type = 0;
             if (mSpeedTrick) {
                 double deg = Math.random() * Math.PI * 2.0;

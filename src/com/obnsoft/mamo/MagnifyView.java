@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 OBN-soft
+ * Copyright (C) 2013, 2014 OBN-soft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,8 +102,9 @@ public class MagnifyView extends View implements OnScaleGestureListener {
                 mFocusY = y;
                 ret = true;
                 break;
-            case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
+                performClick();
+            case MotionEvent.ACTION_CANCEL:
                 if (mIsMoving) {
                     mIsMoving = false;
                     ret = true;
@@ -112,6 +113,11 @@ public class MagnifyView extends View implements OnScaleGestureListener {
             }
         }
         return ret;
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
     /*-----------------------------------------------------------------------*/
