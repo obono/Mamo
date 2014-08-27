@@ -28,7 +28,7 @@
             android:value="@integer/google_play_services_version"
             />
         <activity
-            android:name=".MainActivity"
+            android:name="MainActivity"
             android:configChanges="orientation|screenSize"
             >
             <intent-filter>
@@ -37,11 +37,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.obnsoft.mamo.CaptureCameraActivity"
+            android:name="CaptureCameraActivity"
             android:configChanges="orientation|screenSize"
             />
         <activity
-            android:name="com.obnsoft.mamo.CaptureGalleryActivity"
+            android:name="CaptureGalleryActivity"
+            android:configChanges="orientation|screenSize"
+            />
+        <activity
+            android:name="HistoryActivity"
             android:configChanges="orientation|screenSize"
             />
         <activity

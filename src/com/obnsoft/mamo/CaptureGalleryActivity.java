@@ -119,8 +119,10 @@ public class CaptureGalleryActivity extends CaptureActivity {
         destRect.offset((size - mImgView.getWidth()) / 2f, (size - mImgView.getHeight()) / 2f);
         canvas.drawBitmap(mBitmap,
                 new Rect(0, 0, mBitmap.getWidth(), mBitmap.getHeight()), destRect, null);
+        String fname = TargetUtils.getTargetFileName();
+        TargetUtils.pileHistoryFile(this, fname);
         try {
-            FileOutputStream out = openFileOutput(MyRenderer.FNAME_TARGET, MODE_PRIVATE);
+            FileOutputStream out = openFileOutput(fname, MODE_PRIVATE);
             bmp.compress(CompressFormat.PNG, 80, out);
             out.close();
             setSuccessResult();

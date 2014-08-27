@@ -30,6 +30,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -48,6 +49,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -61,6 +64,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private static final String PREF_KEY_BOMB = "bomb";
     private static final String PREF_KEY_SOUND = "sound";
     private static final String PREF_KEY_LAST = "last_launch";
+    private static final String INTENT_EXTRA_SIMPLE = "simple_mode";
 
     private SharedPreferences   mPrefs;
     private ElementsManager     mManager;
@@ -92,6 +96,15 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        boolean simpleMode = false;
+        if (intent != null && intent.getBooleanExtra(INTENT_EXTRA_SIMPLE, false)) {
+            simpleMode = true;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         setContentView(R.layout.main);
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -161,10 +174,14 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         });
         mAdTextView = (TextView) findViewById(R.id.text_ad);
-        updateCount();
-        updateBomb();
-        updateSoundIcon();
-        updateAdRequest();
+        if (simpleMode) {
+            mGroupUI.setVisibility(View.INVISIBLE);
+        } else {
+            updateCount();
+            updateBomb();
+            updateSoundIcon();
+            updateAdRequest();
+        }
         mSensorMan = (SensorManager) getSystemService(SENSOR_SERVICE);
         if ((mSensorMan.getSensors() & SensorManager.SENSOR_ACCELEROMETER) != 0) {
             mSensor = mSensorMan.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -214,12 +231,13 @@ public class MainActivity extends Activity implements SensorEventListener {
             startActivityForResult(new Intent(this, CaptureGalleryActivity.class), REQUEST_CAPTURE);
             return true;
         case R.id.menu_history:
+            startActivityForResult(new Intent(this, HistoryActivity.class), REQUEST_CAPTURE);
             return true;
         case R.id.menu_simple_mode:
-            mGroupUI.setVisibility(View.INVISIBLE);
-            return true;
-        case R.id.menu_normal_mode:
-            mGroupUI.setVisibility(View.VISIBLE);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(INTENT_EXTRA_SIMPLE, true);
+            startActivity(intent);
+            finish();
             return true;
         case R.id.menu_about:
             showVersion();
@@ -297,7 +315,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private void updateAdRequest() {
         AdRequest adRequest = new AdRequest.Builder()
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                //.addTestDevice("INSERT_YOUR_HASHED_DEVICE_ID_HERE")
+                .addTestDevice("5DD43132EC7E22D2300FE1176597CFBA")
                 .build();
         mAdView.loadAd(adRequest);
     }

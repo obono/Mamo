@@ -16,12 +16,16 @@
 
 package com.obnsoft.mamo;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -42,6 +46,7 @@ public class CaptureCameraActivity extends CaptureActivity
     private Camera.Size mCameraSize;
     private int         mCameraId;
     private SurfaceView mCamView;
+    private int         mCamDeg;
 
     private boolean mFocusing;
 
@@ -171,9 +176,18 @@ public class CaptureCameraActivity extends CaptureActivity
         YuvImage yuvimage;
         if (data != null) {
             yuvimage = new YuvImage(data, ImageFormat.NV21, dw, dh, null);
+            String fname = TargetUtils.getTargetFileName();
+            TargetUtils.pileHistoryFile(this, fname);
             try {
-                FileOutputStream out = openFileOutput(MyRenderer.FNAME_TARGET, MODE_PRIVATE);
-                yuvimage.compressToJpeg(new Rect(gw, gh, dw - gw, dh - gh), 80, out);
+                final int compression = 80;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                yuvimage.compressToJpeg(new Rect(gw, gh, dw - gw, dh - gh), compression, baos);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(baos.toByteArray(), 0, baos.size());
+                Matrix matrix = new Matrix();
+                matrix.postRotate(mCamDeg);
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, size, size, matrix, false);
+                FileOutputStream out = openFileOutput(fname, MODE_PRIVATE);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, compression, out);
                 out.close();
                 setSuccessResult();
             } catch (IOException e) {
@@ -196,17 +210,16 @@ public class CaptureCameraActivity extends CaptureActivity
             case Surface.ROTATION_180: dispDeg = 180; break;
             case Surface.ROTATION_270: dispDeg = 270; break;
         }
-        int camDeg;
         CameraInfo info = new CameraInfo();
         Camera.getCameraInfo(mCameraId, info);
         if (info.facing == CameraInfo.CAMERA_FACING_BACK) {
-            camDeg = (360 + info.orientation - dispDeg) % 360;
+            mCamDeg = (360 + info.orientation - dispDeg) % 360;
         } else {
-            camDeg = (720 - info.orientation - dispDeg) % 360;
+            mCamDeg = (720 - info.orientation - dispDeg) % 360;
         }
 
         int w, h;
-        if (camDeg % 180 == 90) {
+        if (mCamDeg % 180 == 90) {
             w = mCameraSize.height;
             h = mCameraSize.width;
         } else {
@@ -219,7 +232,7 @@ public class CaptureCameraActivity extends CaptureActivity
             lp.addRule(RelativeLayout.CENTER_IN_PARENT);
             mCamView.setLayoutParams(lp);
         }
-        mCamera.setDisplayOrientation(camDeg);
+        mCamera.setDisplayOrientation(mCamDeg);
         mCamera.setPreviewCallbackWithBuffer(this);
         try {
             mCamera.startPreview();

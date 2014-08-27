@@ -17,11 +17,8 @@
 package com.obnsoft.mamo;
 
 import android.app.Activity;
-import android.graphics.Point;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -37,11 +34,7 @@ public class CaptureActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        Display disp = wm.getDefaultDisplay();
-        Point dispSize = new Point();
-        disp.getSize(dispSize);
-        mFrameSize = (Math.min(dispSize.x, dispSize.y) >= 256) ? 256 : 128;
+        mFrameSize = (TargetUtils.getScreenSize(this) >= 256) ? 256 : 128;
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(mFrameSize, mFrameSize);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 

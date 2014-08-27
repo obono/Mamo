@@ -16,8 +16,6 @@
 
 package com.obnsoft.mamo;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -29,14 +27,10 @@ import javax.microedition.khronos.opengles.GL11;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLUtils;
 
 public class MyRenderer implements Renderer {
-
-    public static final String FNAME_TARGET = "target.img";
 
     private static final int BYTES_PAR_FLOAT = 4;
     private static final float TARGET_SIZE = ElementsManager.HIT_SIZE / 2f;
@@ -189,29 +183,9 @@ public class MyRenderer implements Renderer {
 
     private void loadTexture() {
         if (!mIsLoadedTexture) {
-            Bitmap bitmap;
-            try {
-                InputStream in = mContext.openFileInput(FNAME_TARGET);
-                bitmap = BitmapFactory.decodeStream(in);
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.obono256);
-            }
-            Bitmap bitmap2 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-            bitmap.recycle();
-            int w = bitmap.getWidth();
-            int h = bitmap.getHeight();
-            int cx = w / 2, cy = h / 2, size = Math.min(cx, cy);
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    if (Math.hypot(x - cx, y - cy) > size) {
-                        bitmap2.setPixel(x, y, Color.TRANSPARENT);
-                    }
-                }
-            }
-            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap2, 0);
-            bitmap2.recycle();
+            Bitmap bmp = TargetUtils.loadTargetBitmap(mContext, TargetUtils.getTargetFileName());
+            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bmp, 0);
+            bmp.recycle();
             mIsLoadedTexture = true;
         }
     }
