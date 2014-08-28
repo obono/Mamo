@@ -34,6 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_launcher"
+        android:contentDescription="@string/image"
         />
     <ImageView
         android:layout_width="match_parent"
@@ -41,6 +42,7 @@
         android:src="@android:drawable/divider_horizontal_dark"
         android:scaleType="fitXY"
         android:gravity="fill_horizontal"
+        android:contentDescription="@string/image"
         />
     <TextView
         android:id="@+id/text_about_message"

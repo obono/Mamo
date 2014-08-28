@@ -2,6 +2,7 @@
 <resources>
     <string name="app_code" translatable="false">OBN-A16</string>
     <string name="app_name">Baku-rush</string>
+    <string name="image" translatable="false">image</string>
     <string name="menu_camera">Camera</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_history">History</string>

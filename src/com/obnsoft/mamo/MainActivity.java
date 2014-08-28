@@ -34,6 +34,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -47,6 +48,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.Window;
@@ -54,6 +56,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,8 +69,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     private static final String PREF_KEY_LAST = "last_launch";
     private static final String INTENT_EXTRA_SIMPLE = "simple_mode";
 
+    private static ElementsManager  sManager = new ElementsManager();
+
     private SharedPreferences   mPrefs;
-    private ElementsManager     mManager;
     private GLSurfaceView       mGLView;
     private RelativeLayout      mGroupUI;
     private MyRenderer          mRenderer;
@@ -82,14 +86,12 @@ public class MainActivity extends Activity implements SensorEventListener {
     private SoundPool           mSoundPool;
     private int[]               mSoundId = new int[5];
 
+    private boolean             mSimpleMode;
     private int                 mCount;
     private int                 mBomb;
     private boolean             mSound;
     private long                mLaunchTime;
-
-    interface MyClickListener {
-        void onClickNormalized(float x, float y);
-    }
+    private boolean             mAdLoaded;
 
     /*-----------------------------------------------------------------------*/
 
@@ -98,10 +100,24 @@ public class MainActivity extends Activity implements SensorEventListener {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        boolean simpleMode = false;
+        mSimpleMode = false;
         if (intent != null && intent.getBooleanExtra(INTENT_EXTRA_SIMPLE, false)) {
-            simpleMode = true;
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+            mSimpleMode = true;
+            int orientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
+            int rotation = getWindowManager().getDefaultDisplay().getRotation();
+            switch (getResources().getConfiguration().orientation) {
+            case Configuration.ORIENTATION_LANDSCAPE:
+                orientation = (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) ?
+                        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE :
+                        ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                break;
+            case Configuration.ORIENTATION_PORTRAIT:
+                orientation = (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_270) ?
+                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+                        ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                break;
+            }
+            setRequestedOrientation(orientation);
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
@@ -122,13 +138,13 @@ public class MainActivity extends Activity implements SensorEventListener {
             obtainBombs(3);
         }
 
-        mManager = new ElementsManager();
         int day = cal.get(Calendar.DAY_OF_YEAR);
-        mManager.setInterval((day == 16) ? 8 : Math.abs(day % 21 - 10) + 50);
-        mManager.setTricks((day % 67 == 33), (day % 31 == 11), (day % 37 == 22));
+        sManager.setInterval((day == 16) ? 8 : Math.abs(day % 21 - 10) + 50);
+        sManager.setTricks((day % 67 == 33), (day % 31 == 11), (day % 37 == 22));
+
         mGLView = (GLSurfaceView) findViewById(R.id.glview);
         mGroupUI = (RelativeLayout) findViewById(R.id.group_ui);
-        mRenderer = new MyRenderer(this, mManager);
+        mRenderer = new MyRenderer(this, sManager);
         mGLView.setRenderer(mRenderer);
         mGLView.setOnTouchListener(new OnTouchListener() {
             @Override
@@ -142,7 +158,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                     int p = event.getActionIndex();
                     float x = (event.getX(p) - w / 2) / s;
                     float y = (h / 2 - event.getY(p)) / s;
-                    int count = mManager.judgeTarget(x, y);
+                    int count = sManager.judgeTarget(x, y);
                     if (count > 0) {
                         mCount += count;
                         updateCount();
@@ -166,6 +182,11 @@ public class MainActivity extends Activity implements SensorEventListener {
         mAdView = (AdView) findViewById(R.id.ad);
         mAdView.setAdListener(new AdListener() {
             @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                mAdLoaded = true;
+            }
+            @Override
             public void onAdOpened() {
                 super.onAdOpened();
                 obtainBombs((int) (Math.sqrt(Math.random()) * 11.0) + 5);
@@ -174,14 +195,14 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         });
         mAdTextView = (TextView) findViewById(R.id.text_ad);
-        if (simpleMode) {
+
+        updateCount();
+        updateBomb();
+        updateSoundIcon();
+        if (mSimpleMode) {
             mGroupUI.setVisibility(View.INVISIBLE);
-        } else {
-            updateCount();
-            updateBomb();
-            updateSoundIcon();
-            updateAdRequest();
         }
+
         mSensorMan = (SensorManager) getSystemService(SENSOR_SERVICE);
         if ((mSensorMan.getSensors() & SensorManager.SENSOR_ACCELEROMETER) != 0) {
             mSensor = mSensorMan.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -200,6 +221,9 @@ public class MainActivity extends Activity implements SensorEventListener {
         super.onResume();
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         mSensorMan.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_GAME);
+        if (!mSimpleMode && !mAdLoaded) {
+            updateAdRequest();
+        }
     }
 
     @Override
@@ -217,8 +241,11 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        if (!mSimpleMode) {
+            getMenuInflater().inflate(R.menu.main, menu);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -259,7 +286,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     public void onClickBomb(View v) {
         if (mBomb > 0) {
-            int count = mManager.throwBomb();
+            int count = sManager.throwBomb();
             if (count > 0) {
                 mCount += count;
                 updateCount();
@@ -291,7 +318,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         float v2 = event.values[2];
         float r = v0 * v0 + v1 * v1 + v2 * v2;
         if (r > 400f) {
-            mManager.newTarget();
+            sManager.newTarget();
         }
     }
 
@@ -313,6 +340,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
 
     private void updateAdRequest() {
+        mAdLoaded = false;
         AdRequest adRequest = new AdRequest.Builder()
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                 .addTestDevice("5DD43132EC7E22D2300FE1176597CFBA")
@@ -328,7 +356,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     private void showVersion() {
         LayoutInflater inflater = LayoutInflater.from(this);
-        View aboutView = inflater.inflate(R.layout.about, null);
+        View aboutView = inflater.inflate(R.layout.about, new ScrollView(this));
         try {
             PackageInfo packageInfo = getPackageManager().getPackageInfo(
                     getPackageName(), PackageManager.GET_META_DATA);
